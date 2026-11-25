@@ -37,16 +37,32 @@ npm run dev                  # http://localhost:3000
 The SQLite file is created at `DATABASE_PATH` (default `./data/app.db`). The schema is created with
 `CREATE TABLE IF NOT EXISTS`, so starting the app twice is safe. No secret or API key is needed.
 
+## Install on your phone
+
+Apply Board is an installable PWA (manifest, 192/512 px icons incl. a maskable one, service worker). Serve it over HTTPS
+(or `localhost`), open it in the phone browser, then:
+
+- **Android (Chrome):** menu → *Add to Home screen* / *Install app*.
+- **iPhone (Safari):** Share → *Add to Home Screen*.
+
+On a phone the Kanban columns become a swipeable row (scroll-snap) and every button and field is at least 44 px high.
+The service worker caches only the app shell (icons, manifest, offline page, static assets). Pages and `/api/*` are never
+cached, so there is no stale or cross-user data; offline you see a clear "You are offline" page instead of the board.
+Verified in headless Chromium at 360 px: service worker registered, no horizontal scroll, offline fallback shown.
+Not verified on a real phone or on iOS.
+
+![Phone layout](docs/board-phone.png)
+
 ## Tests
 
 ```bash
-npm test            # Vitest: 25 tests, in-memory SQLite
+npm test            # Vitest: 28 tests, in-memory SQLite
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-The tests cover validation, per-user data isolation, SQL in text fields, status stats, the `.ics` output
+The tests cover the PWA manifest, icon sizes and the service worker's no-cache rule for the API, validation, per-user data isolation, SQL in text fields, status stats, the `.ics` output
 (escaping, folding, year boundary), login throttling, session expiry, CSRF rejection and the demo account.
 `npm test` found a real bug while this was built: a "partial update" schema inherited the default status,
 so editing only the notes would have reset the status to `wishlist`; it is fixed and has a regression test.
@@ -61,7 +77,8 @@ src/lib/applications.ts  CRUD scoped by user, stats
 src/lib/ics.ts           calendar export
 src/lib/handlers.ts      request handlers: (db, Request) -> Response, no framework needed to test them
 src/app/api/**/route.ts  thin Next.js routes that call the handlers
-src/app/**               pages: sign-in and the board
+src/app/**               pages: sign-in and the board; manifest.ts + register-sw.tsx (PWA)
+public/sw.js, offline.html, icons/   service worker, offline page, app icons
 tests/                   Vitest suites
 ```
 

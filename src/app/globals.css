@@ -33,3 +33,15 @@ header.bar { display: flex; justify-content: space-between; gap: 12px; flex-wrap
 .card .meta { font-size: .85rem; color: var(--muted); }
 .card .soon { color: var(--danger); font-weight: 600; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+/* Phone layout: 44px touch targets, no horizontal page scroll, swipeable Kanban columns */
+button, .btn, input, select { min-block-size: 44px; }
+.card button, .card .btn { min-inline-size: 44px; }
+@media (max-width: 640px) {
+  main { padding: 12px; }
+  .board { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; padding-block-end: 8px; -webkit-overflow-scrolling: touch; }
+  .board .col { flex: 0 0 85%; scroll-snap-align: start; }
+  header.bar .row { inline-size: 100%; }
+  main:has(.board) { display: flex; flex-direction: column; }
+  main:has(.board) .board { order: 1; margin-block-start: 0 !important; }
+  main:has(.board) form { order: 2; margin-block-start: 16px; }
+}
