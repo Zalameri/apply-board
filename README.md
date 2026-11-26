@@ -15,6 +15,11 @@ them to your calendar as an `.ics` file.
 - Board with five status columns, add / edit status / edit notes / delete.
 - Summary: totals, response rate (share of submitted applications that got an interview, offer or rejection),
   deadlines in the next 14 days.
+- Paste a job ad: `POST /api/parse-ad` reads company, role, deadline (ISO, `15/12/2026` or "15 December 2026"), link and the
+  bullets under "Requirements" from the text with a local rule-based parser (no AI key, no network call, nothing stored).
+  The board fills the form, you correct it, and a preparation checklist built from the skills and deadline it found is saved
+  in the notes. Fields it cannot find stay empty. It is rule-based, so unusual layouts may be only partly read.
+  ![Paste a job ad on a phone](docs/job-ad-phone.png)
 - Calendar export: `GET /api/applications/export` returns RFC 5545 all-day events (escaped and line-folded).
 - Demo mode: one click creates a throw-away account filled with fictional data. Set `ENABLE_DEMO=0` to hide it.
 - Every query is scoped to the signed-in user and parameterised; input is validated with Zod at the API boundary.
@@ -56,7 +61,7 @@ Not verified on a real phone or on iOS.
 ## Tests
 
 ```bash
-npm test            # Vitest: 28 tests, in-memory SQLite
+npm test            # Vitest: 36 tests, in-memory SQLite
 npm run lint
 npm run typecheck
 npm run build
@@ -75,6 +80,7 @@ src/lib/schema.ts        Zod schemas and types
 src/lib/auth.ts          register / login / sessions / login throttling
 src/lib/applications.ts  CRUD scoped by user, stats
 src/lib/ics.ts           calendar export
+src/lib/parse-ad.ts      local job-ad parser (pure function)
 src/lib/handlers.ts      request handlers: (db, Request) -> Response, no framework needed to test them
 src/app/api/**/route.ts  thin Next.js routes that call the handlers
 src/app/**               pages: sign-in and the board; manifest.ts + register-sw.tsx (PWA)

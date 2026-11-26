@@ -20,6 +20,7 @@ import {
   sessionCookie,
   withUser,
 } from "./http";
+import { MAX_AD_LENGTH, parseJobAd } from "./parse-ad";
 import crypto from "node:crypto";
 
 export const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -102,3 +103,12 @@ export const exportHandler = (db: Db, req: Request) =>
       },
     }),
   );
+
+/** Extracts company, role, deadline and a preparation checklist from pasted job-ad text (local parser, nothing is saved). */
+export const parseAdHandler = (db: Db, req: Request) =>
+  withUser(db, req, async () => {
+    const body = (await readJson(req)) as { text?: unknown };
+    if (typeof body?.text !== "string" || body.text.trim().length < 10) throw new ValidationError("Paste the job ad text (at least 10 characters)");
+    if (body.text.length > MAX_AD_LENGTH) throw new ValidationError(`Job ad is too long (max ${MAX_AD_LENGTH} characters)`);
+    return json({ parsed: parseJobAd(body.text, todayIso()) });
+  });

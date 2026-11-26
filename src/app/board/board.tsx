@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { ParsedAd } from "@/lib/parse-ad";
 import { useRouter } from "next/navigation";
 import { STATUSES, type Application, type Status } from "@/lib/schema";
 import type { Stats } from "@/lib/applications";
@@ -12,6 +13,22 @@ export default function Board(props: { email: string; isDemo: boolean; initial: 
   const [apps, setApps] = useState(props.initial);
   const [stats, setStats] = useState(props.initialStats);
   const [error, setError] = useState("");
+  const [adText, setAdText] = useState("");
+  const [parsed, setParsed] = useState<ParsedAd | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  async function readAd() {
+    const res = await call("/api/parse-ad", "POST", { text: adText });
+    if (!res) return;
+    const { parsed: p } = (await res.json()) as { parsed: ParsedAd };
+    setParsed(p);
+    const el = formRef.current?.elements;
+    if (!el) return;
+    (el.namedItem("company") as HTMLInputElement).value = p.company;
+    (el.namedItem("role") as HTMLInputElement).value = p.role;
+    (el.namedItem("deadline") as HTMLInputElement).value = p.deadline ?? "";
+    (el.namedItem("url") as HTMLInputElement).value = p.url;
+  }
 
   async function refreshStats() {
     const r = await fetch("/api/stats");
@@ -36,11 +53,14 @@ export default function Board(props: { email: string; isDemo: boolean; initial: 
       status: f.get("status"),
       deadline: f.get("deadline") || null,
       url: f.get("url") || "",
+      notes: parsed ? parsed.checklist.map((c) => `- [ ] ${c}`).join("\n").slice(0, 2000) : "",
     });
     if (res) {
       const { application } = await res.json();
       setApps((a) => [...a, application]);
       form.reset();
+      setParsed(null);
+      setAdText("");
       refreshStats();
     }
   }
@@ -90,7 +110,22 @@ export default function Board(props: { email: string; isDemo: boolean; initial: 
         <div className="panel stat"><b>{stats.byStatus.interview}</b>interviews</div>
       </section>
 
+      <section className="panel" aria-labelledby="ad-h" style={{ marginBlockEnd: 16 }}>
+        <h2 id="ad-h" style={{ marginTop: 0, fontSize: "1.1rem" }}>Paste a job ad</h2>
+        <p className="muted">Company, role, deadline and link are read from the text on the server (no AI key needed). Check them, then add.</p>
+        <label htmlFor="ad">Job ad text</label>
+        <textarea id="ad" rows={5} maxLength={12000} value={adText} onChange={(e) => setAdText(e.target.value)} />
+        <button type="button" style={{ marginBlockStart: 8 }} disabled={adText.trim().length < 10} onClick={readAd}>Fill the form from this ad</button>
+        {parsed && (
+          <div aria-live="polite">
+            <h3 style={{ fontSize: "1rem" }}>Your preparation checklist (saved to notes when you add)</h3>
+            <ul>{parsed.checklist.map((c) => <li key={c}>{c}</li>)}</ul>
+          </div>
+        )}
+      </section>
+
       <form
+        ref={formRef}
         className="panel"
         onSubmit={(e) => {
           e.preventDefault();
