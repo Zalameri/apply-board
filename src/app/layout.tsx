@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+import { LANG_COOKIE, dirOf, messages, normalizeLang } from "@/lib/i18n";
 import { RegisterServiceWorker } from "./register-sw";
 import "./globals.css";
 
@@ -11,11 +13,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#1f5fd1", width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = normalizeLang((await cookies()).get(LANG_COOKIE)?.value);
   return (
-    <html lang="en">
+    <html lang={lang} dir={dirOf(lang)}>
       <body>
-        <a className="skip" href="#main">Skip to content</a>
+        <a className="skip" href="#main">{messages[lang].skip}</a>
         <main id="main">{children}</main>
         <RegisterServiceWorker />
       </body>

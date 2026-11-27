@@ -20,6 +20,10 @@ them to your calendar as an `.ics` file.
   The board fills the form, you correct it, and a preparation checklist built from the skills and deadline it found is saved
   in the notes. Fields it cannot find stay empty. It is rule-based, so unusual layouts may be only partly read.
   ![Paste a job ad on a phone](docs/job-ad-phone.png)
+
+  Arabic (RTL) interface, real screenshot at phone width:
+
+  ![Arabic interface on a phone](docs/board-ar-phone.png)
 - Calendar export: `GET /api/applications/export` returns RFC 5545 all-day events (escaped and line-folded).
 - Demo mode: one click creates a throw-away account filled with fictional data. Set `ENABLE_DEMO=0` to hide it.
 - Every query is scoped to the signed-in user and parameterised; input is validated with Zod at the API boundary.
@@ -61,7 +65,7 @@ Not verified on a real phone or on iOS.
 ## Tests
 
 ```bash
-npm test            # Vitest: 36 tests, in-memory SQLite
+npm test            # Vitest: 40 tests, in-memory SQLite
 npm run lint
 npm run typecheck
 npm run build
@@ -94,6 +98,6 @@ Handlers take the database and a standard `Request`, so the API tests run withou
 
 - The login throttle is in memory, so it resets on restart and is per server process.
 - Status changes use a select box, not drag-and-drop.
-- English only for now; the layout uses logical CSS properties so an Arabic/RTL version is possible.
+- The interface is available in English and Arabic (RTL) through a language button; the Arabic wording has not been reviewed by a native editor, the job-ad parser reads English ads best, and application data you type is shown as-is.
 - Not deployed anywhere yet: it needs a Node server with a writable disk for the SQLite file.
 - The GitHub Actions workflow in `.github/workflows/ci.yml` had not run yet when this README was written.

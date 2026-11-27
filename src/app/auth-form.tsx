@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { messages, type Lang } from "@/lib/i18n";
+import LangSwitch from "./lang-switch";
 
-export default function AuthForm({ demoEnabled }: { demoEnabled: boolean }) {
+export default function AuthForm({ demoEnabled, lang }: { demoEnabled: boolean; lang: Lang }) {
+  const t = messages[lang];
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
@@ -22,14 +25,14 @@ export default function AuthForm({ demoEnabled }: { demoEnabled: boolean }) {
       router.push("/board");
       router.refresh();
     } else {
-      setError((await res.json().catch(() => ({}))).error ?? "Something went wrong");
+      setError((await res.json().catch(() => ({}))).error ?? t.wentWrong);
     }
   }
 
   return (
     <div className="auth panel">
-      <h1>Apply Board</h1>
-      <p className="muted">Track internship applications, deadlines and notes in one place.</p>
+      <h1>{t.appName}</h1>
+      <p className="muted">{t.tagline}</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -37,9 +40,9 @@ export default function AuthForm({ demoEnabled }: { demoEnabled: boolean }) {
           post(`/api/auth/${mode}`, { email: f.get("email"), password: f.get("password") });
         }}
       >
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">{t.email}</label>
         <input id="email" name="email" type="email" autoComplete="email" required />
-        <label htmlFor="password">Password (8+ characters)</label>
+        <label htmlFor="password">{t.password}</label>
         <input
           id="password"
           name="password"
@@ -50,15 +53,16 @@ export default function AuthForm({ demoEnabled }: { demoEnabled: boolean }) {
         />
         <p className="err" role="alert">{error}</p>
         <div className="row">
-          <button disabled={busy}>{mode === "login" ? "Sign in" : "Create account"}</button>
+          <button disabled={busy}>{mode === "login" ? t.signIn : t.createAccount}</button>
           <button type="button" className="secondary" onClick={() => setMode(mode === "login" ? "register" : "login")}>
-            {mode === "login" ? "Need an account?" : "Have an account?"}
+            {mode === "login" ? t.needAccount : t.haveAccount}
           </button>
           {demoEnabled && (
             <button type="button" className="secondary" disabled={busy} onClick={() => post("/api/auth/demo")}>
-              Try the demo
-            </button>
+              {t.tryDemo}
+                        </button>
           )}
+          <LangSwitch lang={lang} />
         </div>
       </form>
     </div>
