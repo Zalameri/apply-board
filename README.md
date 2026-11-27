@@ -69,7 +69,11 @@ npm test            # Vitest: 40 tests, in-memory SQLite
 npm run lint
 npm run typecheck
 npm run build
+npx playwright install chromium   # once
+npm run e2e         # browser smoke test (builds and starts the app on port 3100)
 ```
+
+`e2e/smoke.spec.ts` drives a real Chromium at phone width: demo login, paste a job ad, add the application, move it to "Applied", check there is no horizontal scroll, then switch to Arabic and check `dir=rtl`. In CI it runs after the unit tests (the first CI run of this step has not been verified yet).
 
 The tests cover the PWA manifest, icon sizes and the service worker's no-cache rule for the API, validation, per-user data isolation, SQL in text fields, status stats, the `.ics` output
 (escaping, folding, year boundary), login throttling, session expiry, CSRF rejection and the demo account.
